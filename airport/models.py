@@ -106,3 +106,29 @@ class Airplane(models.Model):
 
     def __str__(self):
         return f"{self.name} , {self.airline_type.name}"
+
+
+class Crew(models.Model):
+    first_name = models.CharField(max_length=63, )
+    last_name = models.CharField(max_length=63, )
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+    @property
+    def full_name(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class Flight(models.Model):
+    route = models.ForeignKey(
+        Route, on_delete=models.CASCADE, related_name="flights", )
+    airplane = models.ForeignKey(
+        Airplane, on_delete=models.CASCADE, related_name="flights", )
+    crew = models.ManyToManyField(
+        Crew, related_name="flights", )
+    departure_time = models.DateTimeField()
+    arrival_time = models.DateTimeField()
+
+    def __str__(self):
+        return f"{self.route}/n{self.departure_time}"
