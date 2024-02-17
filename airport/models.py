@@ -1,12 +1,8 @@
 import os
 import uuid
-import os
-import uuid
 
-from django.core.exceptions import ValidationError
-from django.db import models
 from django.conf import settings
-from django.utils.text import slugify
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 from geopy.distance import geodesic
@@ -104,7 +100,7 @@ class Airplane(models.Model):
     def capacity(self) -> int:
         return self.rows * self.seats_in_row
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.name} , {self.airline_type.name}"
 
 
@@ -112,11 +108,11 @@ class Crew(models.Model):
     first_name = models.CharField(max_length=63, )
     last_name = models.CharField(max_length=63, )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.first_name} {self.last_name}"
 
     @property
-    def full_name(self):
+    def full_name(self) -> str:
         return f"{self.first_name} {self.last_name}"
 
 
@@ -130,5 +126,74 @@ class Flight(models.Model):
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.route}/n{self.departure_time}"
+
+
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self) -> str:
+        return str(self.created_at)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class Ticket(models.Model):
+    flight = models.ForeignKey(
+        Flight, on_delete=models.CASCADE, related_name="tickets", )
+    order = models.ForeignKey(
+        Order, on_delete=models.CASCADE, related_name="tickets", )
+    row = models.IntegerField()
+    seat = models.IntegerField()
+
+    @staticmethod
+    def validate_ticket(row: int,
+                        seat: int,
+                        airplane: Airplane,
+                        error_to_raise: type[Exception],
+                        ) -> None:
+        for ticket_attr_value, ticket_attr_name, airplane_attr_name in [
+            (row, "row", "rows"),
+            (seat, "seat", "seats_in_row"),
+        ]:
+            count_attrs = getattr(airplane, airplane_attr_name)
+            if not (1 <= ticket_attr_value <= count_attrs):
+                raise error_to_raise(
+                    {
+                        ticket_attr_name: f"{ticket_attr_name} "
+                                          f"number must be in available range: "
+                                          f"(1, {airplane_attr_name}): "
+                                          f"(1, {count_attrs})"
+                    }
+                )
+
+    def clean(self) -> None:
+        Ticket.validate_ticket(
+            self.row,
+            self.seat,
+            self.flight.airplane,
+            ValidationError,
+        )
+
+    def save(self,
+             force_insert: bool = False,
+             force_update: bool = False,
+             using: str | None = None,
+             update_fields: tuple[str] | None = None,
+             ) -> None:
+        self.full_clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
+    def __str__(self) -> str:
+        return f"{str(self.flight)} " \
+               f"(row: {self.row}, seat: {self.seat})"
+
+    class Meta:
+        unique_together = ("flight", "row", "seat")
+        ordering = ["row", "seat"]
