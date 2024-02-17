@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework import viewsets
 
-# Create your views here.
+from airport.models import Country
+from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
+from airport.serializers import CountrySerializer
+
+
+class CountryViewSet(viewsets.ModelViewSet):
+    queryset = Country.objects.all()
+    serializer_class = CountrySerializer
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
