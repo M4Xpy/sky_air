@@ -1,6 +1,12 @@
 import os
 import uuid
+import os
+import uuid
 
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.conf import settings
+from django.utils.text import slugify
 from django.db import models
 from django.utils.text import slugify
 from geopy.distance import geodesic
@@ -76,3 +82,27 @@ class Route(models.Model):
     def __str__(self) -> str:
         return (f"{self.source.city.name}, {self.source.city.country.name}"
                 f" - {self.destination.city.name}, {self.destination.city.country.name}")
+
+
+class AirplaneType(models.Model):
+    name = models.CharField(
+        max_length=63, unique=True, )
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Airplane(models.Model):
+    name = models.CharField(
+        max_length=63, unique=True, )
+    rows = models.IntegerField()
+    seats_in_row = models.IntegerField()
+    airline_type = models.ForeignKey(
+        AirplaneType, on_delete=models.CASCADE, related_name="airplanes", )
+
+    @property
+    def capacity(self) -> int:
+        return self.rows * self.seats_in_row
+
+    def __str__(self):
+        return f"{self.name} , {self.airline_type.name}"
