@@ -28,6 +28,9 @@ class Country(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    class Meta:
+        verbose_name_plural = "countries"
+
 
 class City(models.Model):
     name = models.CharField(
@@ -37,6 +40,9 @@ class City(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    class Meta:
+        verbose_name_plural = "cities"
 
 
 class Airport(models.Model):
