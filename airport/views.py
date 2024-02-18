@@ -2,14 +2,14 @@ from rest_framework import viewsets
 
 from airport.models import (
     Country,
-    City, Airport, Route,
+    City, Airport, Route, AirplaneType,
 )
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import (
     CountrySerializer,
     CitySerializer,
     AirportSerializer,
-    RouteSerializer,
+    RouteSerializer, AirplaneTypeSerializer,
 )
 
 
@@ -31,6 +31,11 @@ class AirportViewSet(viewsets.ModelViewSet):
 
 
 class RouteViewSet(viewsets.ModelViewSet):
-    queryset = Route.objects.select_related('source', 'destination').all()
-    # queryset = Route.objects.prefetch_related("airport", )
+    queryset = Route.objects.select_related("source", "destination", )
     serializer_class = RouteSerializer
+
+
+class AirplaneTypeViewSet(viewsets.ModelViewSet):
+    queryset = AirplaneType.objects.all()
+    serializer_class = AirplaneTypeSerializer
+    permission_classes = IsAdminOrIfAuthenticatedReadOnly,

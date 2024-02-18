@@ -2,7 +2,9 @@ from rest_framework import serializers
 
 from airport.models import (
     Country,
-    City, Airport, Route, AirplaneType,
+    City,
+    Airport,
+    Route, AirplaneType,
 )
 
 
@@ -52,4 +54,4 @@ class RouteSerializer(serializers.ModelSerializer):
 class AirplaneTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AirplaneType
-        fields = "name"
+        fields = "name",
