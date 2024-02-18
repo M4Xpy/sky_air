@@ -55,6 +55,9 @@ class Airport(models.Model):
     def __str__(self) -> str:
         return f"{self.name} - {self.city.name}"
 
+    class Meta:
+        unique_together = "name", "city",
+
 
 class Route(models.Model):
     source = models.ForeignKey(
