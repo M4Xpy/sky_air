@@ -29,3 +29,7 @@ python manage.py runserver # starts Django project
 ## Demo
 
 ![Api Logo](./media/logo.png)
+
+## Scheme of models
+
+![ Scheme of models](./media/scheme.png)
