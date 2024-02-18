@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from airport.models import (
     Country,
-    City, Airport,
+    City, Airport, Route, AirplaneType,
 )
 
 
@@ -20,7 +20,7 @@ class CitySerializer(serializers.ModelSerializer):
         model = City
         fields = "id", "name", "country", "Country",
         extra_kwargs = {
-            "country": {"write_only": True}
+            "country": {"write_only": True},
         }
 
 
@@ -32,5 +32,24 @@ class AirportSerializer(serializers.ModelSerializer):
         model = Airport
         fields = "id", "name", "City", "city",
         extra_kwargs = {
-            "city": {"write_only": True}
+            "city": {"write_only": True},
         }
+
+
+class RouteSerializer(serializers.ModelSerializer):
+    Source = AirportSerializer(source="source", read_only=True, )
+    Destination = AirportSerializer(source="destination", read_only=True, )
+
+    class Meta:
+        model = Route
+        fields = "id", "Source", "Destination", "source", "destination", "distance",
+        extra_kwargs = {
+            "source": {"write_only": True},
+            "destination": {"write_only": True},
+        }
+
+
+class AirplaneTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AirplaneType
+        fields = "name"
