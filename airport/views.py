@@ -46,7 +46,7 @@ from airport.serializers import (
 class CountryViewSet(viewsets.ModelViewSet):
     queryset = Country.objects.all()
     serializer_class = CountrySerializer
-    permission_classes = IsAdminOrIfAuthenticatedReadOnly,
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         country = self.request.query_params.get("country")
@@ -54,7 +54,8 @@ class CountryViewSet(viewsets.ModelViewSet):
 
         if country:
             queryset = queryset.filter(
-                name__icontains=country, )
+                name__icontains=country,
+            )
 
         return queryset.distinct()
 
@@ -73,7 +74,7 @@ class CountryViewSet(viewsets.ModelViewSet):
 class CityViewSet(viewsets.ModelViewSet):
     queryset = City.objects.select_related("country")
     serializer_class = CitySerializer
-    permission_classes = IsAdminOrIfAuthenticatedReadOnly,
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         country = self.request.query_params.get("country")
@@ -81,7 +82,8 @@ class CityViewSet(viewsets.ModelViewSet):
 
         if country:
             queryset = queryset.filter(
-                country__name__icontains=country, )
+                country__name__icontains=country,
+            )
 
         return queryset.distinct()
 
@@ -107,7 +109,8 @@ class AirportViewSet(viewsets.ModelViewSet):
 
         if city:
             queryset = queryset.filter(
-                city__name__icontains=city, )
+                city__name__icontains=city,
+            )
 
         return queryset.distinct()
 
@@ -136,7 +139,10 @@ class RouteViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = Route.objects.select_related("source", "destination", )
+    queryset = Route.objects.select_related(
+        "source",
+        "destination",
+    )
     serializer_class = RouteSerializer
 
     def get_queryset(self):
@@ -147,10 +153,12 @@ class RouteViewSet(
 
         if source:
             queryset = queryset.filter(
-                source__city__name__icontains=source, )
+                source__city__name__icontains=source,
+            )
         if destination:
             queryset = queryset.filter(
-                destination__city__name__icontains=destination, )
+                destination__city__name__icontains=destination,
+            )
 
         return queryset.distinct()
 
@@ -169,7 +177,7 @@ class RouteViewSet(
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
     queryset = AirplaneType.objects.all()
     serializer_class = AirplaneTypeSerializer
-    permission_classes = IsAdminOrIfAuthenticatedReadOnly,
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         type = self.request.query_params.get("type")
@@ -177,7 +185,8 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
 
         if type:
             queryset = queryset.filter(
-                name__icontains=type, )
+                name__icontains=type,
+            )
 
         return queryset.distinct()
 
@@ -196,7 +205,7 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
 class AirplaneViewSet(viewsets.ModelViewSet):
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
-    permission_classes = IsAdminOrIfAuthenticatedReadOnly,
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
         name = self.request.query_params.get("name")
@@ -204,7 +213,8 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
         if name:
             queryset = queryset.filter(
-                name__icontains=name, )
+                name__icontains=name,
+            )
 
         return queryset.distinct()
 
@@ -223,7 +233,7 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 class CrewViewSet(viewsets.ModelViewSet):
     queryset = Crew.objects.all()
     serializer_class = CrewSerializer
-    permission_classes = permissions.IsAdminUser,
+    permission_classes = (permissions.IsAdminUser,)
 
     def get_queryset(self):
         full_name = self.request.query_params.get("full_name")
@@ -240,7 +250,7 @@ class CrewViewSet(viewsets.ModelViewSet):
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.prefetch_related("route", "airplane", "crew")
     serializer_class = FlightSerializer
-    permission_classes = IsAdminOrIfAuthenticatedReadOnly,
+    permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
 class OrderPagination(PageNumberPagination):

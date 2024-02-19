@@ -19,16 +19,27 @@ from airport.models import (
 class CountrySerializer(serializers.ModelSerializer):
     class Meta:
         model = Country
-        fields = "id", "name", "flag",
+        fields = (
+            "id",
+            "name",
+            "flag",
+        )
 
 
 class CitySerializer(serializers.ModelSerializer):
     Country = serializers.CharField(
-        source="country.name", read_only=True, )
+        source="country.name",
+        read_only=True,
+    )
 
     class Meta:
         model = City
-        fields = "id", "name", "country", "Country",
+        fields = (
+            "id",
+            "name",
+            "country",
+            "Country",
+        )
         extra_kwargs = {
             "country": {"write_only": True},
         }
@@ -36,11 +47,18 @@ class CitySerializer(serializers.ModelSerializer):
 
 class AirportSerializer(serializers.ModelSerializer):
     City = serializers.CharField(
-        source="city.name", read_only=True, )
+        source="city.name",
+        read_only=True,
+    )
 
     class Meta:
         model = Airport
-        fields = "id", "name", "City", "city",
+        fields = (
+            "id",
+            "name",
+            "City",
+            "city",
+        )
         extra_kwargs = {
             "city": {"write_only": True},
         }
@@ -49,16 +67,32 @@ class AirportSerializer(serializers.ModelSerializer):
 class AirportShortSerializer(AirportSerializer):
     class Meta:
         model = Airport
-        fields = "name", "City",
+        fields = (
+            "name",
+            "City",
+        )
 
 
 class RouteSerializer(serializers.ModelSerializer):
-    Source = AirportShortSerializer(source="source", read_only=True, )
-    Destination = AirportShortSerializer(source="destination", read_only=True, )
+    Source = AirportShortSerializer(
+        source="source",
+        read_only=True,
+    )
+    Destination = AirportShortSerializer(
+        source="destination",
+        read_only=True,
+    )
 
     class Meta:
         model = Route
-        fields = "id", "Source", "Destination", "source", "destination", "distance",
+        fields = (
+            "id",
+            "Source",
+            "Destination",
+            "source",
+            "destination",
+            "distance",
+        )
         extra_kwargs = {
             "source": {"write_only": True},
             "destination": {"write_only": True},
@@ -68,19 +102,33 @@ class RouteSerializer(serializers.ModelSerializer):
 class RouteShortSerializer(RouteSerializer):
     class Meta:
         model = Route
-        fields = "Source", "Destination", "distance",
+        fields = (
+            "Source",
+            "Destination",
+            "distance",
+        )
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
-        fields = "id", "name", "rows", "seats_in_row", "airline_type", "capacity",
+        fields = (
+            "id",
+            "name",
+            "rows",
+            "seats_in_row",
+            "airline_type",
+            "capacity",
+        )
 
 
 class AirplaneShortSerializer(AirplaneSerializer):
     class Meta:
         model = Airplane
-        fields = "name", "capacity",
+        fields = (
+            "name",
+            "capacity",
+        )
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
@@ -88,23 +136,44 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AirplaneType
-        fields = "name", "airplanes",
+        fields = (
+            "name",
+            "airplanes",
+        )
 
 
 class CrewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Crew
-        fields = "id", "first_name", "last_name",
+        fields = (
+            "id",
+            "first_name",
+            "last_name",
+        )
 
 
 class FlightSerializer(serializers.ModelSerializer):
-    Route = RouteShortSerializer(source="route", read_only=True, )
-    Airplane = AirplaneShortSerializer(source="airplane", read_only=True, )
+    Route = RouteShortSerializer(
+        source="route",
+        read_only=True,
+    )
+    Airplane = AirplaneShortSerializer(
+        source="airplane",
+        read_only=True,
+    )
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "Route", "Airplane", "airplane",
-                  "crew", "departure_time", "arrival_time",)
+        fields = (
+            "id",
+            "route",
+            "Route",
+            "Airplane",
+            "airplane",
+            "crew",
+            "departure_time",
+            "arrival_time",
+        )
         extra_kwargs = {
             "route": {"write_only": True},
             "airplane": {"write_only": True},
