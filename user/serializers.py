@@ -11,16 +11,18 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ("is_staff",)
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
-    def create(self,
-               validated_data: dict[str, any],
-               ) -> AbstractUser:
+    def create(
+        self,
+        validated_data: dict[str, any],
+    ) -> AbstractUser:
         """Create a new user with encrypted password and return it"""
         return get_user_model().objects.create_user(**validated_data)
 
-    def update(self,
-               instance: AbstractUser,
-               validated_data: dict[str, any],
-               ) -> AbstractUser:
+    def update(
+        self,
+        instance: AbstractUser,
+        validated_data: dict[str, any],
+    ) -> AbstractUser:
         """Update a user, set the password correctly and return it"""
         password = validated_data.pop("password", None)
         user = super().update(instance, validated_data)
@@ -37,9 +39,10 @@ class AuthTokenSerializer(serializers.Serializer):
         label=_("Password"), style={"input_type": "password"}
     )
 
-    def validate(self,
-                 attrs: dict[str, any],
-                 ) -> dict[str, any]:
+    def validate(
+        self,
+        attrs: dict[str, any],
+    ) -> dict[str, any]:
         email = attrs.get("email")
         password = attrs.get("password")
 
@@ -49,8 +52,7 @@ class AuthTokenSerializer(serializers.Serializer):
             if user:
                 if not user.is_active:
                     msg = _("User account is disabled.")
-                    raise serializers.ValidationError(msg,
-                                                      code="authorization")
+                    raise serializers.ValidationError(msg, code="authorization")
             else:
                 msg = _("Unable to log in with provided credentials.")
                 raise serializers.ValidationError(msg, code="authorization")
