@@ -111,15 +111,10 @@ class ModelsTests(TestCase):
         """Test the __str__ method of the Airport model"""
         self.assertEqual(str(self.london_airport), "Heathrow (LHR) - London")
 
-    # def test_airport_uniqueness_within_city(self):
-    #     """Test uniqueness of airport names within a city"""
-    #     # # Try creating another airport with the same name in the same city
-    #     Airport.objects.create(name="TestAirport", city=self.test_city)
-    #     Airport.objects.create(name="TestAirport", city=self.test_city)
-    #     Airport.objects.create(name="TestAirport", city=self.test_city)
-    #     x = Airport.objects.filter(name="TestAirport", city=self.test_city).count()
-    #     Airport.objects.create(name="TestAirport", city=self.test_city)
-    #     self.assertEqual(x, Airport.objects.filter(name="TestAirport", city=self.test_city).count())
+    def test_create_duplicate_airport(self):
+        """Test uniqueness of airport names within a city"""
+        with self.assertRaises(Exception):
+            Airport.objects.create(name="Heathrow (LHR)", city=self.london)
 
     def test_both_routes_creation(self):
         """Test the creation of the both routes"""
