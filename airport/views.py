@@ -20,15 +20,19 @@ from airport.models import (
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
 from airport.serializers import (
     CountrySerializer,
-    CitySerializer,
-    AirportSerializer,
-    RouteSerializer,
+    RouteListSerializer,
     AirplaneTypeSerializer,
     AirplaneSerializer,
     CrewSerializer,
     FlightSerializer,
     OrderSerializer,
     OrderListSerializer,
+    FlightDetailSerializer,
+    RouteDetailSerializer,
+    CityListSerializer,
+    CityDetailSerializer,
+    AirportListSerializer,
+    AirportDetailSerializer,
 )
 
 
@@ -69,23 +73,41 @@ class CountryViewSet(viewsets.ModelViewSet):
             required=False,
             location="query",
         ),
+        OpenApiParameter(
+            name="city",
+            type=int,
+            description="Filter by city name (case-insensitive)",
+            required=False,
+            location="query",
+        ),
     ]
 )
 class CityViewSet(viewsets.ModelViewSet):
     queryset = City.objects.select_related("country")
-    serializer_class = CitySerializer
+    serializer_class = CityListSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
-        country = self.request.query_params.get("country")
         queryset = self.queryset
+        country = self.request.query_params.get("country")
+        city = self.request.query_params.get("city")
 
         if country:
             queryset = queryset.filter(
                 country__name__icontains=country,
             )
 
+        if city:
+            queryset = queryset.filter(
+                name__icontains=city,
+            )
+
         return queryset.distinct()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CityListSerializer
+        return CityDetailSerializer
 
 
 @extend_schema(
@@ -97,22 +119,37 @@ class CityViewSet(viewsets.ModelViewSet):
             required=False,
             location="query",
         ),
+        OpenApiParameter(
+            name="airport",
+            type=str,
+            description="Filter by airport (case-insensitive)",
+            required=False,
+            location="query",
+        ),
     ]
 )
 class AirportViewSet(viewsets.ModelViewSet):
     queryset = Airport.objects.select_related("city")
-    serializer_class = AirportSerializer
 
     def get_queryset(self):
-        city = self.request.query_params.get("city")
         queryset = self.queryset
+        city = self.request.query_params.get("city")
+        airport = self.request.query_params.get("airport")
 
         if city:
             queryset = queryset.filter(
                 city__name__icontains=city,
             )
 
+        if airport:
+            queryset = queryset.filter(name__icontains=airport)
+
         return queryset.distinct()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return AirportListSerializer
+        return AirportDetailSerializer
 
 
 @extend_schema(
@@ -125,9 +162,9 @@ class AirportViewSet(viewsets.ModelViewSet):
             location="query",
         ),
         OpenApiParameter(
-            name="destinations",
+            name="destination",
             type=str,
-            description="Filter by destination IDs (comma-separated)",
+            description="Filter by destination (case-insensitive)",
             required=False,
             location="query",
         ),
@@ -140,10 +177,9 @@ class RouteViewSet(
     viewsets.GenericViewSet,
 ):
     queryset = Route.objects.select_related(
-        "source",
-        "destination",
+        "source__city",
+        "destination__city",
     )
-    serializer_class = RouteSerializer
 
     def get_queryset(self):
         source = self.request.query_params.get("source")
@@ -162,30 +198,35 @@ class RouteViewSet(
 
         return queryset.distinct()
 
+    def get_serializer_class(self):
+        if self.action == "list":
+            return RouteListSerializer
+        return RouteDetailSerializer
+
 
 @extend_schema(
     parameters=[
         OpenApiParameter(
-            name="type",
+            name="airplane_type",
             type=str,
-            description="Filter by type (case-insensitive)",
+            description="Filter by airplane type (case-insensitive)",
             required=False,
             location="query",
         ),
     ]
 )
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
-    queryset = AirplaneType.objects.all()
+    queryset = AirplaneType.objects.prefetch_related("airplanes")
     serializer_class = AirplaneTypeSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
     def get_queryset(self):
-        type = self.request.query_params.get("type")
+        airplane_type = self.request.query_params.get("airplane_type")
         queryset = self.queryset
 
-        if type:
+        if airplane_type:
             queryset = queryset.filter(
-                name__icontains=type,
+                name__icontains=airplane_type,
             )
 
         return queryset.distinct()
@@ -203,7 +244,7 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
     ]
 )
 class AirplaneViewSet(viewsets.ModelViewSet):
-    queryset = Airplane.objects.all()
+    queryset = Airplane.objects.select_related("airplane_type")
     serializer_class = AirplaneSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
@@ -248,9 +289,34 @@ class CrewViewSet(viewsets.ModelViewSet):
 
 
 class FlightViewSet(viewsets.ModelViewSet):
-    queryset = Flight.objects.prefetch_related("route", "airplane", "crew")
+    queryset = Flight.objects.prefetch_related(
+        "route__source__city", "route__destination__city", "airplane", "crew"
+    )
     serializer_class = FlightSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
+    def get_queryset(self):
+        queryset = self.queryset
+        departure = self.request.query_params.get("departure")
+        arrival = self.request.query_params.get("arrival")
+        source = self.request.query_params.get("city")
+        destination = self.request.query_params.get("destination")
+
+        if departure:
+            queryset = queryset.filter(departure_time__contains=departure)
+        if arrival:
+            queryset = queryset.filter(arrival_time__contains=arrival)
+        if source:
+            queryset = queryset.filter(route__source__name__icontains=source)
+        if destination:
+            queryset = queryset.filter(route__destination__name__icontains=destination)
+
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FlightSerializer
+        return FlightDetailSerializer
 
 
 class OrderPagination(PageNumberPagination):

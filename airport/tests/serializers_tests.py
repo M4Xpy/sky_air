@@ -11,10 +11,10 @@ from airport.models import (
 )
 from airport.serializers import (
     CountrySerializer,
-    CitySerializer,
-    AirportSerializer,
-    RouteSerializer,
-    RouteShortSerializer,
+    CityListSerializer,
+    AirportListSerializer,
+    RouteListSerializer,
+    RouteDetailSerializer,
     AirplaneSerializer,
     AirplaneShortSerializer,
     AirplaneTypeSerializer,
@@ -53,7 +53,7 @@ class CitySerializerTestCase(TestCase):
     def setUp(self):
         self.country = Country.objects.create(name="Test Country")
         self.city = City.objects.create(name="Test City", country=self.country)
-        self.serializer = CitySerializer(instance=self.city)
+        self.serializer = CityListSerializer(instance=self.city)
         self.data = self.serializer.data
 
     def test_serializer_includes_id_field(self):
@@ -66,7 +66,7 @@ class CitySerializerTestCase(TestCase):
 
     def test_serializer_includes_Country_field(self):
         """Test if the serializer includes the 'Country' field."""
-        self.assertIn("Country", self.data)
+        self.assertIn("country", self.data)
 
     def test_serializer_id_matches_instance_id(self):
         """Test if the serialized 'id' matches the instance ID."""
@@ -78,7 +78,7 @@ class CitySerializerTestCase(TestCase):
 
     def test_serializer_Country_matches_instance_country_name(self):
         """Test if the serialized 'Country' matches the instance country name."""
-        self.assertEqual(self.data["Country"], self.country.name)
+        self.assertEqual(self.data["country"], self.country.name)
 
 
 class AirportSerializersTests(TestCase):
@@ -86,11 +86,11 @@ class AirportSerializersTests(TestCase):
         self.country = Country.objects.create(name="Test Country")
         self.city = City.objects.create(name="Test City", country=self.country)
         self.airport = Airport.objects.create(name="Test Airport", city=self.city)
-        self.serializer = AirportSerializer(instance=self.airport)
+        self.serializer = AirportListSerializer(instance=self.airport)
         self.data = self.serializer.data
 
 
-class AirportSerializerTestCase(AirportSerializersTests):
+class AirportListSerializerTestCase(AirportSerializersTests):
     def test_serializer_includes_id_field(self):
         """Test if the serializer includes the 'id' field."""
         self.assertIn("id", self.data)
@@ -101,7 +101,7 @@ class AirportSerializerTestCase(AirportSerializersTests):
 
     def test_serializer_includes_City_field(self):
         """Test if the serializer includes the 'City' field."""
-        self.assertIn("City", self.data)
+        self.assertIn("city", self.data)
 
     def test_serializer_id_matches_instance_id(self):
         """Test if the serialized 'id' matches the instance ID."""
@@ -113,25 +113,25 @@ class AirportSerializerTestCase(AirportSerializersTests):
 
     def test_serializer_City_matches_instance_city_name(self):
         """Test if the serialized 'City' matches the instance city name."""
-        self.assertEqual(self.data["City"], self.city.name)
+        self.assertEqual(self.data["city"], self.city.name)
 
 
-class AirportShortSerializerTestCase(AirportSerializersTests):
-    def test_airport_short_serializer_includes_name_field(self):
-        """Test if the airport short serializer includes the 'name' field."""
-        self.assertIn("name", self.data)
-
-    def test_airport_short_serializer_includes_City_field(self):
-        """Test if the airport short serializer includes the 'City' field."""
-        self.assertIn("City", self.data)
-
-    def test_airport_short_serializer_name_matches_instance_name(self):
-        """Test if the serialized 'name' matches the instance name."""
-        self.assertEqual(self.data["name"], self.airport.name)
-
-    def test_airport_short_serializer_City_matches_instance_city_name(self):
-        """Test if the serialized 'City' matches the instance city name."""
-        self.assertEqual(self.data["City"], self.city.name)
+# class AirportShortSerializerTestCase(AirportSerializersTests):
+#     def test_airport_short_serializer_includes_name_field(self):
+#         """Test if the airport short serializer includes the 'name' field."""
+#         self.assertIn("name", self.data)
+#
+#     def test_airport_short_serializer_includes_City_field(self):
+#         """Test if the airport short serializer includes the 'City' field."""
+#         self.assertIn("city", self.data)
+#
+#     def test_airport_short_serializer_name_matches_instance_name(self):
+#         """Test if the serialized 'name' matches the instance name."""
+#         self.assertEqual(self.data["name"], self.airport.name)
+#
+#     def test_airport_short_serializer_City_matches_instance_city_name(self):
+#         """Test if the serialized 'City' matches the instance city name."""
+#         self.assertEqual(self.data["city"], self.city.name)
 
 
 class RouteSerializersTest(TestCase):
@@ -149,9 +149,9 @@ class RouteSerializersTest(TestCase):
             destination=self.destination_airport,
             distance=100,
         )
-        self.serializer = RouteSerializer(instance=self.route)
+        self.serializer = RouteListSerializer(instance=self.route)
         self.data = self.serializer.data
-        self.short_serializer = RouteShortSerializer(instance=self.route)
+        self.short_serializer = RouteDetailSerializer(instance=self.route)
         self.short_data = self.short_serializer.data
 
 
@@ -162,11 +162,11 @@ class RouteSerializerTestCase(RouteSerializersTest):
 
     def test_route_serializer_includes_Source_field(self):
         """Test if the route serializer includes the 'Source' field."""
-        self.assertIn("Source", self.data)
+        self.assertIn("source", self.data)
 
     def test_route_serializer_includes_Destination_field(self):
         """Test if the route serializer includes the 'Destination' field."""
-        self.assertIn("Destination", self.data)
+        self.assertIn("destination", self.data)
 
     def test_route_serializer_includes_distance_field(self):
         """Test if the route serializer includes the 'distance' field."""
@@ -178,7 +178,7 @@ class RouteSerializerTestCase(RouteSerializersTest):
 
     def test_route_serializer_source_matches_instance_source_name(self):
         """Test if the serialized 'source' matches the instance source name."""
-        self.assertEqual(self.data["Source"]["name"], self.source_airport.name)
+        self.assertEqual(self.data["source"]["name"], self.source_airport.name)
 
     def test_route_serializer_distance_matches_instance_distance(self):
         """Test if the serialized 'distance' matches the instance distance."""
@@ -187,18 +187,18 @@ class RouteSerializerTestCase(RouteSerializersTest):
     def test_route_serializer_destination_matches_instance_destination_name(self):
         """Test if the serialized 'destination' matches the instance destination name."""
         self.assertEqual(
-            self.data["Destination"]["name"], self.destination_airport.name
+            self.data["destination"]["name"], self.destination_airport.name
         )
 
 
 class RouteShortSerializerTestCase(RouteSerializersTest):
     def test_route_short_serializer_includes_Source_field(self):
         """Test if the route short serializer includes the 'Source' field."""
-        self.assertIn("Source", self.short_data)
+        self.assertIn("source", self.short_data)
 
     def test_route_short_serializer_includes_Destination_field(self):
         """Test if the route short serializer includes the 'Destination' field."""
-        self.assertIn("Destination", self.short_data)
+        self.assertIn("destination", self.short_data)
 
     def test_route_short_serializer_includes_distance_field(self):
         """Test if the route short serializer includes the 'distance' field."""
@@ -206,13 +206,11 @@ class RouteShortSerializerTestCase(RouteSerializersTest):
 
     def test_route_short_serializer_source_matches_instance_source_name(self):
         """Test if the serialized 'Source' matches the instance source name."""
-        self.assertEqual(self.short_data["Source"]["name"], self.source_airport.name)
+        self.assertEqual(self.short_data["source"], self.source_airport.id)
 
     def test_route_short_serializer_destination_matches_instance_destination_name(self):
         """Test if the serialized 'Destination' matches the instance destination name."""
-        self.assertEqual(
-            self.short_data["Destination"]["name"], self.destination_airport.name
-        )
+        self.assertEqual(self.short_data["destination"], self.destination_airport.id)
 
     def test_route_short_serializer_distance_matches_instance_distance(self):
         """Test if the serialized 'distance' matches the instance distance."""
@@ -226,7 +224,7 @@ class AirplaneSerializersTestCase(TestCase):
             name="Test Airplane",
             rows=10,
             seats_in_row=6,
-            airline_type=self.airplane_type,
+            airplane_type=self.airplane_type,
         )
         self.serializer = AirplaneSerializer(instance=self.airplane)
         self.data = self.serializer.data
@@ -249,9 +247,9 @@ class AirplaneSerializersTestCase(TestCase):
         """Test if the airplane serializer includes the 'seats_in_row' field."""
         self.assertIn("seats_in_row", self.data)
 
-    def test_airplane_serializer_includes_airline_type_field(self):
-        """Test if the airplane serializer includes the 'airline_type' field."""
-        self.assertIn("airline_type", self.data)
+    def test_airplane_serializer_includes_airplane_type_field(self):
+        """Test if the airplane serializer includes the 'airplane_type' field."""
+        self.assertIn("airplane_type", self.data)
 
     def test_airplane_serializer_includes_capacity_field(self):
         """Test if the airplane serializer includes the 'capacity' field."""
@@ -281,9 +279,9 @@ class AirplaneSerializersTestCase(TestCase):
         """Test if the serialized 'seats_in_row' matches the instance seats_in_row."""
         self.assertEqual(self.data["seats_in_row"], self.airplane.seats_in_row)
 
-    def test_airplane_serializer_airline_type_matches_instance_airline_type(self):
-        """Test if the serialized 'airline_type' matches the instance airline_type."""
-        self.assertEqual(self.data["airline_type"], self.airplane.airline_type.id)
+    def test_airplane_serializer_airplane_type_matches_instance_airplane_type(self):
+        """Test if the serialized 'airplane_type' matches the instance airplane_type."""
+        self.assertEqual(self.data["airplane_type"], self.airplane.airplane_type.id)
 
     def test_airplane_serializer_capacity_calculation(self):
         """Test if the capacity calculation is correct."""
@@ -296,10 +294,10 @@ class AirplaneTypeSerializerTestCase(TestCase):
     def setUp(self):
         self.airplane_type = AirplaneType.objects.create(name="Test Airplane Type")
         self.airplane1 = Airplane.objects.create(
-            name="Airplane 1", rows=10, seats_in_row=6, airline_type=self.airplane_type
+            name="Airplane 1", rows=10, seats_in_row=6, airplane_type=self.airplane_type
         )
         self.airplane2 = Airplane.objects.create(
-            name="Airplane 2", rows=8, seats_in_row=4, airline_type=self.airplane_type
+            name="Airplane 2", rows=8, seats_in_row=4, airplane_type=self.airplane_type
         )
         self.serializer = AirplaneTypeSerializer(instance=self.airplane_type)
         self.data = self.serializer.data

@@ -40,7 +40,7 @@ class ModelsTests(TestCase):
             name="testAirplane",
             rows=2,
             seats_in_row=3,
-            airline_type_id=self.test_type.id,
+            airplane_type_id=self.test_type.id,
         )
         self.test_crew = Crew.objects.create(
             first_name="Test",
@@ -152,7 +152,8 @@ class ModelsTests(TestCase):
         """Test the __str__ method of an airplane"""
         self.assertEqual(
             str(self.test_airplane),
-            f"{self.test_airplane.name} , {self.test_airplane.airline_type.name}", )
+            f"{self.test_airplane.name}, {self.test_airplane.airplane_type.name}",
+        )
 
     def test_airplane_capacity(self):
         """Test capacity property of an airplane"""

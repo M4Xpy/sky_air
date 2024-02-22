@@ -26,11 +26,8 @@ class CountrySerializer(serializers.ModelSerializer):
         )
 
 
-class CitySerializer(serializers.ModelSerializer):
-    Country = serializers.CharField(
-        source="country.name",
-        read_only=True,
-    )
+class CityListSerializer(serializers.ModelSerializer):
+    country = serializers.CharField()
 
     class Meta:
         model = City
@@ -38,73 +35,59 @@ class CitySerializer(serializers.ModelSerializer):
             "id",
             "name",
             "country",
-            "Country",
         )
-        extra_kwargs = {
-            "country": {"write_only": True},
-        }
 
 
-class AirportSerializer(serializers.ModelSerializer):
-    City = serializers.CharField(
-        source="city.name",
-        read_only=True,
-    )
+class CityDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = City
+        fields = (
+            "name",
+            "country",
+        )
+
+
+class AirportListSerializer(serializers.ModelSerializer):
+    city = serializers.CharField()
 
     class Meta:
         model = Airport
         fields = (
             "id",
             "name",
-            "City",
             "city",
         )
-        extra_kwargs = {
-            "city": {"write_only": True},
-        }
 
 
-class AirportShortSerializer(AirportSerializer):
+class AirportDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airport
         fields = (
             "name",
-            "City",
+            "city",
         )
 
 
-class RouteSerializer(serializers.ModelSerializer):
-    Source = AirportShortSerializer(
-        source="source",
-        read_only=True,
-    )
-    Destination = AirportShortSerializer(
-        source="destination",
-        read_only=True,
-    )
+class RouteListSerializer(serializers.ModelSerializer):
+    source = AirportListSerializer()
+    destination = AirportListSerializer()
 
     class Meta:
         model = Route
         fields = (
             "id",
-            "Source",
-            "Destination",
             "source",
             "destination",
             "distance",
         )
-        extra_kwargs = {
-            "source": {"write_only": True},
-            "destination": {"write_only": True},
-        }
 
 
-class RouteShortSerializer(RouteSerializer):
+class RouteDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Route
         fields = (
-            "Source",
-            "Destination",
+            "source",
+            "destination",
             "distance",
         )
 
@@ -117,7 +100,7 @@ class AirplaneSerializer(serializers.ModelSerializer):
             "name",
             "rows",
             "seats_in_row",
-            "airline_type",
+            "airplane_type",
             "capacity",
         )
 
@@ -153,32 +136,30 @@ class CrewSerializer(serializers.ModelSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
-    Route = RouteShortSerializer(
-        source="route",
-        read_only=True,
-    )
-    Airplane = AirplaneShortSerializer(
-        source="airplane",
-        read_only=True,
-    )
+    route = RouteListSerializer()
+    airplane = AirplaneShortSerializer()
 
     class Meta:
         model = Flight
         fields = (
             "id",
             "route",
-            "Route",
-            "Airplane",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+        )
+
+
+class FlightDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Flight
+        fields = (
+            "route",
             "airplane",
             "crew",
             "departure_time",
             "arrival_time",
         )
-        extra_kwargs = {
-            "route": {"write_only": True},
-            "airplane": {"write_only": True},
-            "crew": {"write_only": True},
-        }
 
 
 class TicketSerializer(serializers.ModelSerializer):
@@ -199,6 +180,13 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class TicketListSerializer(TicketSerializer):
     movie_session = FlightSerializer(many=False, read_only=True)
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight", "movie_session")
+        extra_kwargs = {
+            "movie_session": {"write_only": True},
+        }
 
 
 class TicketSeatsSerializer(TicketSerializer):

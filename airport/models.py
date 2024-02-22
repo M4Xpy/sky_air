@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.text import slugify
 from geopy.distance import geodesic
+from geopy.exc import GeocoderTimedOut, GeocoderUnavailable
 from geopy.geocoders import Nominatim
 
 
@@ -73,10 +74,10 @@ class Airport(models.Model):
         return f"{self.name} - {self.city.name}"
 
     class Meta:
-        unique_together = (
+        unique_together = [
             "name",
             "city",
-        )
+        ]
 
 
 class Route(models.Model):
@@ -95,21 +96,24 @@ class Route(models.Model):
     )
 
     def calculate_distance(self) -> int:
-        geolocator = Nominatim(user_agent="distance_calculator")
+        try:
+            geolocator = Nominatim(user_agent="distance_calculator")
 
-        location1 = geolocator.geocode(
-            f"{self.source.city.name}, {self.source.city.country.name}"
-        )
-        location2 = geolocator.geocode(
-            f"{self.destination.city.name}, {self.destination.city.country.name}"
-        )
+            location1 = geolocator.geocode(
+                f"{self.source.city.name}, {self.source.city.country.name}"
+            )
+            location2 = geolocator.geocode(
+                f"{self.destination.city.name}, {self.destination.city.country.name}"
+            )
 
-        # Calculate the distance between the two coordinates
-        distance = geodesic(
-            (location1.latitude, location1.longitude),
-            (location2.latitude, location2.longitude),
-        ).kilometers
-        return int(distance)
+            # Calculate the distance between the two coordinates
+            distance = geodesic(
+                (location1.latitude, location1.longitude),
+                (location2.latitude, location2.longitude),
+            ).kilometers
+            return int(distance)
+        except (GeocoderTimedOut, GeocoderUnavailable, Exception):
+            return 0
 
     def save(self, *args: any, **kwargs: any) -> None:
         if not self.distance:
@@ -140,7 +144,7 @@ class Airplane(models.Model):
     )
     rows = models.IntegerField()
     seats_in_row = models.IntegerField()
-    airline_type = models.ForeignKey(
+    airplane_type = models.ForeignKey(
         AirplaneType,
         on_delete=models.CASCADE,
         related_name="airplanes",
@@ -151,7 +155,7 @@ class Airplane(models.Model):
         return self.rows * self.seats_in_row
 
     def __str__(self) -> str:
-        return f"{self.name} , {self.airline_type.name}"
+        return f"{self.name}, {self.airplane_type.name}"
 
 
 class Crew(models.Model):
