@@ -3,10 +3,6 @@
 Simple airport api ,
 structured by city , country, airplane, airport , etc.
 
-## Docker
-
-[Top  movies  project  dockerised  to docker.hub](#)
-
 ## installation
 
 Python3 must be already installed
@@ -18,6 +14,14 @@ python3 -m venv venv
 source venv/bin/activate
 pip install requirements.txt
 python manage.py runserver # starts Django project
+```
+
+## Run  with  docker
+
+Docker  should  be  installed
+```shell
+sudo docker-compose build
+sudo docker-compose up
 ```
 
 ## Features
